@@ -1,0 +1,35 @@
+seed -1
+k0 2
+k3 3.6984
+betac 0
+betal 0
+sigma3 0.05
+prob23 5.447479
+probtree 1.159255
+probe02 65.962769
+probv02 5.798026
+
+tuningsweeps 100
+measurementsweeps 0
+thermalizationsweeps 100000
+ksteps 4
+
+allowselfadjacency 0
+allowdegeneracy 0
+dualspanningtree 1
+spanningtree 1
+middlegraph 1
+
+volume 1000
+input 0
+infile conf-2-0-0-1000-1.DT
+outfile conf-2-0-0-1000-1.DT
+fileID 2-0-0-1000-1
+number 1
+printfreq 100
+
+measuresimplexdata 1
+measureadjacency 0
+measurehistograms 0
+adjacency_matrix_version 0
+
