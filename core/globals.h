@@ -14,7 +14,8 @@ int n3bar = 0;
 double probm1 = 0;
 double probm2 = 0;
 double probm3 = 0;
-double probmt = 0;
+double probmtv = 0;
+double probmtd = 0;
 
 double epsilon = 0;
 
@@ -31,12 +32,17 @@ std::vector<uint64_t> moves(9,0);
 std::vector<uint64_t> mov(9,0);
 
 
-int selfadj =0;
+//FIXED PARAMTERS NOW
+int selfadj = 0;
 int degeneracy = 0;
-int dualspanningtree = 0;
-int spanningtree = 0;
-int middlegraph = 0;
+int dualspanningtree = 1;
+int spanningtree = 1;
+int middlegraph = 1;
+//FIXED PARAMTERS NOW
+
+
 int seed = 0;
+
 
 
 int input = 0;

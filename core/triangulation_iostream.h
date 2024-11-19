@@ -2,7 +2,7 @@
 #define TRIANGULATION_IOSTREAM_H
 
 
-#include "triangulation.h"
+
 
 void Triangulation::saveToStream(std::ostream & stream) {
         stream << numSimplices() << " " << numVertices() << "\n";
