@@ -2,9 +2,6 @@
 #define TRIANGULATION_ADJACENCY_MATRIX_H
 
 
-#include "triangulation.h"
-
-
 #define BUFFER_SIZE 1000
 
 void Triangulation::printAdjacency(char * outfilename) {

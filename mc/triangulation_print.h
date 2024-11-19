@@ -4,11 +4,11 @@
 
 void Triangulation:: printSimplexData() {
 	if(measure_data) {
-		FILE * loopfile;
+		FILE * datafile;
 		char loopfilename[1000];
 		if(config_number == 0) {
 			
-			sprintf(loopfilename, "loops-%g-%g-%g-%d.out",
+			sprintf(loopfilename, "data-%g-%g-%g-%d.out",
 				kappa0,
 				betaL,
 				betaC,
@@ -16,7 +16,7 @@ void Triangulation:: printSimplexData() {
 			);
 		}
 		else {
-			sprintf(loopfilename, "loops-%g-%g-%g-%d-%d.out",
+			sprintf(loopfilename, "data-%g-%g-%g-%d-%d.out",
 				kappa0,
 				betaL,
 				betaC,
@@ -25,7 +25,7 @@ void Triangulation:: printSimplexData() {
 			);
 		}
 
-		loopfile	= fopen(loopfilename, "a");
+		datafile	= fopen(loopfilename, "a");
 		int nComp = getMiddleGraphNumConnected();
 		int nNodes = getMiddleGraphNodeSize();
 		int nEdges = getMiddleGraphEdgeSize();
@@ -39,8 +39,8 @@ void Triangulation:: printSimplexData() {
 		int coord3Size = GetCoord3Size();
 		int edgecoord2Size = GetEdgeCoord2Size();
 		
-		fprintf(loopfile,"%d\t%d\t%g\t%d\t%d\t%d\t%d\t%d\t%d\t%d \t%d\t%d\t%d\n",nVert,nSimp,kappa3,nNodes,nEdges,nComp,nLoop,maxC,maxV,maxE,coord2Size,coord3Size,edgecoord2Size);
-		fclose(loopfile);
+		fprintf(datafile,"%d\t%d\t%g\t%d\t%d\t%d\t%d\t%d\t%d\t%d \t%d\t%d\t%d\n",nVert,nSimp,kappa3,nNodes,nEdges,nComp,nLoop,maxC,maxV,maxE,coord2Size,coord3Size,edgecoord2Size);
+		fclose(datafile);
 	}
 }
 

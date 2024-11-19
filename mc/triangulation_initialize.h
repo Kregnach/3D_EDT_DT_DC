@@ -1,9 +1,6 @@
 #ifndef TRIANGULATION_INICIALIZE_H
 #define TRIANGULATION_INICIALIZE_H
 
-
-#include "triangulation.h"
-
 void Triangulation::InitInactiveGraphNodes() { for(int i = 0; i < ABSMAX_DC ; i++) inactive_graph_nodes_[i] = i; }
 
 void Triangulation::initializeMiddleGraph() {

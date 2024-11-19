@@ -1,8 +1,6 @@
 #ifndef TRIANGULATION_ACTION_H
 #define TRIANGULATION_ACTION_H
 
-#include "triangulation.h"
-
 bool Triangulation::getProbabilityNow(double moveprob, double SA, double SB, double prob) {
 	double proba = prob * std::exp( SA - SB );
 
@@ -22,10 +20,7 @@ void Triangulation::SetAction() {
 	int nl = nc + getMiddleGraphEdgeSize() - getMiddleGraphNodeSize();
 }
 
-double Triangulation::getAction(int n0,int n3, int nl, int nc) { 
-	/*printf("Couplings IN: %g\t%g\t%g\t%g\t%g\t",getK0(),getK3(),getBetaL(),getBetaC(),getSigma3());    	
-	printf("NUMBERS IN: %d\t%d\t%d\t%d\n",n0,n3,nl,nc);*/
-	
+double Triangulation::getAction(int n0,int n3, int nl, int nc) { 	
 
 	double action = kappa3 * n3
 				  - kappa0 * n0

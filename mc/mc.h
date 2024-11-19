@@ -2,13 +2,6 @@
 #define MC_H
 
 
-
-enum MoveType { MOVE02, MOVE20, MOVE23, MOVE32, TREEMOVE, DUALTREEMOVE, FAILED };
-const std::string MoveNames[7] = { "move02", "move20", "move23", "move32", "tree", "dualtree", "failed" };
-
-
-//enum MoveType { MOVE14, MOVE41, MOVE23, MOVE32, FAILED };
-
 template<typename RNG> Handle randomEdge(Triangulation & triangulation, RNG & rng) { return triangulation.getSimplex( uniform_int(rng, triangulation.numSimplices()) )->getEdge( uniform_int(rng,4), uniform_int(rng,3) ); }
 template<typename RNG> Handle randomSimplex(Triangulation & triangulation, RNG & rng) { return triangulation.getSimplex( uniform_int(rng, triangulation.numSimplices()) ); }
 template<typename RNG> Handle randomUniformEdge(Triangulation & triangulation, RNG & rng) { return triangulation.getNode(1,uniform_int(rng,triangulation.numEdges()))->getHandle(); }
@@ -256,44 +249,31 @@ void clearFaceLinksBeforeMove20(Triangulation & triangulation, Handle origin) {
     
 }
     
-bool setFaceLinksAfterMove20(Triangulation & triangulation, Handle handle) {
-    clearFaceLinks(handle);
-
-    /*if( !setFaceLinks(handle) || (triangulation.hasMiddleTree() && !triangulation.middleForestIsTree()) ) { clearFaceLinks(handle); return false; }*/
-
-    return true;
-}
+bool setFaceLinksAfterMove20(Triangulation & triangulation, Handle handle) { clearFaceLinks(handle); return true; }
 
 
 
 template<typename RNG> int MonteCarloGraphMove(Triangulation & triangulation, RNG & rng) {
     // enum MoveType { MOVE02, MOVE20, MOVE23, MOVE32, TREEMOVE, DUALTREEMOVE, FAILED }
-    double probtree = probmt;
-    double prob23 = probm2;
-    double probe02 = probm3;
-    double probv02 = probm1;
     
-    
-    double move_probability = uniform_real(rng, 0,probv02 + probtree + prob23 + probe02);
+    double move_probability = uniform_real(rng, 0,probm1 + probm2 + probm3 + probmtv+ probmtd);
     
     int isantimove = (int)(2*uniform_real(rng));
     
-    if( (move_probability < probv02)  && probv02 != 0) {
+    if( (move_probability < probm1)  && probm1 != 0) {
 		if( isantimove ) return triangulation.TryGraphMove02(rng) ? 0 : 8; 
 		else return triangulation.TryGraphMove20(rng) ? 1 : 8;
 	}
-	else if( (move_probability < probv02 + prob23)  && prob23!= 0 ) {
+	else if( (move_probability < probm1 + probm2)  && probm2 != 0 ) {
         if( isantimove ) return triangulation.TryGraphMove23(rng) ? 2 : 8;
         else return triangulation.TryGraphMove32(rng) ? 3 : 8;
     }
-    else if( (move_probability < probtree +  probv02 + prob23 ) && probtree != 0) {
-        if( isantimove ) return triangulation.TryGraphTreeMove(rng) ? 4 : 8;
-        else return triangulation.TryGraphDualTreeMove(rng) ? 5 : 8;
+    else if( (move_probability < probm1 + probm2 + probm3)  && probm3 != 0 ) {
+        if( isantimove ) return triangulation.TryGraphMoveEdge02(rng) ? 4 : 8;
+        else return triangulation.TryGraphMoveEdge20(rng) ? 5 : 8;
     }
-    else if( (move_probability < probe02 + probtree +  probv02 + prob23 )  && probe02 != 0 ){
-        if( isantimove ) return triangulation.TryGraphMoveEdge02(rng) ? 6 : 8;
-        else return triangulation.TryGraphMoveEdge20(rng) ? 7 : 8;
-    }
+    else if( (move_probability < probmtv +  probm1 + probm2 + probm3 ) && probmtv != 0) return triangulation.TryGraphTreeMove(rng) ? 6 : 8;
+    else if( (move_probability < probmtd + probmtv +  probm1 + probm2 + probm3 ) && probmtd != 0) return triangulation.TryGraphDualTreeMove(rng) ? 7 : 8;
 	else { printf("prob is different!!! \n"); assert(0 == 1); }
 	return 8;
 }
