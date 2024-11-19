@@ -1,8 +1,6 @@
 #ifndef QUADRANGULAR_PILLOW_INVERSE_H
 #define QUADRANGULAR_PILLOW_INVERSE_H
 
-#include "triangulation.h"
-
 template<typename RNG> Handle Triangulation::GetRandomEdgeCoord2(RNG & rng) { return coord_2_edges_[(int)(coord_2_edges_.size()*uniform_real(rng))]->getHandle(); }
 
 

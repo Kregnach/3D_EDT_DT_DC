@@ -1,9 +1,6 @@
 #ifndef MOVES_H
 #define MOVES_H
 
-#include "triangulation.h"
-
-
 Handle Triangulation::expandTriangle(Handle handle, double dual_tree_rooting, double tree_rooting) {
 		Handle nbr = handle.getAdjacent3D();
 

@@ -1,10 +1,6 @@
 #ifndef BISTELLAR_FLIP_H
 #define BISTELLAR_FLIP_H
 
-#include "triangulation.h"
-
-
-
 
 template<typename RNG> bool Triangulation::TryGraphMove23(RNG & rng) {
 		proposed_rate[2]++;

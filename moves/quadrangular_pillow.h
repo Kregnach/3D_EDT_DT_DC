@@ -1,8 +1,6 @@
 #ifndef QUADRANGULAR_PILLOW_H
 #define QUADRANGULAR_PILLOW_H
 
-#include "triangulation.h"
-
 void Triangulation:: unsetGraphFaceLinksBeforeMoveEdge02(Handle h1, Handle h2) {
 	unsetGraphEdgeLinks(h1);
 	

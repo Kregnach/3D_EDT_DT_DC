@@ -1,9 +1,6 @@
 #ifndef TRIANGULAR_PILLOW_H
 #define TRIANGULAR_PILLOW_H
 
-#include "triangulation.h"
-
-
 
 template<typename RNG> bool Triangulation::TryGraphMove02(RNG & rng) {
 	proposed_rate[0]++;

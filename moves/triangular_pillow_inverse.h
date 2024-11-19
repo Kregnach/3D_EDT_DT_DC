@@ -1,8 +1,6 @@
 #ifndef TRIANGULAR_PILLOW_INVERSE_H
 #define TRIANGULAR_PILLOW_INVERSE_H
 
-#include "triangulation.h"
-
 template<typename RNG> Handle Triangulation::GetRandomCoord2(RNG & rng) {	return coord_2_nodes_[(int)(coord_2_nodes_.size()*uniform_real(rng))]->getHandle(); }
 
 

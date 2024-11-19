@@ -2,9 +2,6 @@
 #define GRAPHMOVES_H
 
 
-#include "triangulation.h"
-
-
 template<typename RNG> std::pair<Handle,Handle> Triangulation::randomGraphSpanningTreeMove(RNG & rng) {
 	// choose a uniform edge not in the spanning tree
 	Handle newedge;
