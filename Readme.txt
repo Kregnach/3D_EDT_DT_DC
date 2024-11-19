@@ -1,5 +1,44 @@
+Euclidean Triangulations with Spawning Trees and Dynamic Connectivity
 
-## https://github.com/tomtseng/dynamic-connectivity-hdt
+
+The Code implements Euclidean Dynamical Triangulations in 3 dimensions, adding two spawning trees, one on the tetrahedra and one on the vertices. 
+
+A tree of tetrehedra takes all tetrehedra as nodes and  connects all terahedra via their triangular faces, without any loops or disconnected components. Thus every node is a tetrehedra and every econd node is a triangle in the dual-tree. The tree of vertices is the same, just visiting vertices along edges of the triangulation. There are many edges and triangles that are not visited by the trees, and they form the middlge graph. A graph on the middle graph goes from edge to triangle alternately, and can form loops and components. The smallest unit of such a graph is a pair of triangle and edge forming a length 2 graph.
+
+
+The Pachner moves to change the geometry:
+
+1. triangular-pillow
+2. quadrangular-pillow
+3. bistellar-flip
+4. dual-tree move
+5. vertex-tree move
+
+
+
+1.) The triangular pillow takes a triangle, and separates the two tetrahedra that is glued by that triangular face, and glues there two tetrehedra (sharing 3 faces) in its place, introducing a vertex with coordination number 2. The inverse move finds a vertex with coordination number 2, removes the two tetrahedra, and glueas the outer neighbors.
+
+2.) The quadrangular pillow selects two random trianglse around a random edge, and treats this structure defined by the two triangles as a rectangle. Opens up the trianuglation along this, separating the tetrahedra glued by these faces, and glues in its place two tetrahedra which share 2 faces. This move creates an edge with coordination number 2. The inverse move selects an edge with coordination number 2, and if it it doesn't have a vertex with coordination number 2 (created by the triangular pillows) then removes the two tetrahedra and glues the external objects.
+
+3.) The bistellar flip move removes a triangular face between two triangles, replaces it with a vertex which connects the disconnected vertices of two adjacent tetrahedra, forming 3 tetrahedra around the new edge. The inverse move removes an edge with coordination number 3.
+
+4.) / 5. )  The tree moves find a location, where it adds the missing edge to the cycle around an edge or triangle, then randomly selects one tree-element to be removed, modifying the location of the tree this way.
+
+
+
+The code performs standard Monte Carlo Metropolis Hastings algorithm.
+
+
+
+Coupling constants:
+
+-kappa0: bare Newton coupling constant
+-kappa3: bare consmological coupling constant
+-betaL: bare looop coupling constant
+-betaC: bare component coupling constant
+
+
+kappa3 is tuned to a particular value, determined by the desired Volume. 
 
 
 # run as:
@@ -9,9 +48,9 @@ g++ main.cpp -I. -std=cc++17 -O3 -o DT
 
 # generate configuration file (Cfg) with the gen.sh
 
-# standard naming convention: k0-betaL-betaC-Volume-number
+# standard naming convention: kappa0-betaL-betaC-Volume-number
 
-# k0 : newton coupling
+# kappa0 : newton coupling
 # betaL : loop coupling
 # betaC : component coupling
 # Volume : number of tetrahedra (typically the fixed value), k means thousand
@@ -42,26 +81,21 @@ rand=$RANDOM
 
 cat > Cfg-$k-$l-$c-${v}k-${num}.txt << EOF             # FILENAME
 seed 						${rand}                    # seed of the random number
-k0							$k                         # gravitational coupling
-k3							-1                         # cosmological coupling
+kappa0							$k                         # gravitational coupling
+kappa3							-1                         # cosmological coupling
 betac						$c                         # component coupling
 betal						$l                         # loop coupling
 sigma3						0.05                       # strength of the volume fixing 
-prob23						0.5                        # probability of the bistellar flip move
-probtree					0.05                       # probability of the tree moves
-probe02						0                          # probability of the quadrangular pillow move
-probv02						1                          # probability of the triangular pillow move
+m_bistellar_flip						0.5                        # probability of the bistellar flip move
+m_vertextree					0.05                       # probability of the tree moves
+m_dualtree					0.05                       # probability of the tree moves
+m_quadrangular_pillow						0                          # probability of the quadrangular pillow move
+m_triangular_pillow						1                          # probability of the triangular pillow move
 
-tuningsweeps					100                    # number of sweeps to be performed before the thermalization (start tuning k3 after reaching the desired volume)
 measurementsweeps				400000                 # number of measurement sweeps to be performed
-thermalizationsweeps				20000                  # number of thermalization sweeps to be performed
-ksteps						${v}0                  # number of attempted moves (multiplied by 1000) within a sweep
+thermalizationsweeps				20000              # number of thermalization sweeps to be performed
+ksteps						${v}0                      # number of attempted moves (multiplied by 1000) within a sweep
 
-allowselfadjacency				0                      # default mode
-allowdegeneracy					0                      # default mode
-dualspanningtree				1                      # default mode
-spanningtree					1                      # default mode
-middlegraph					1                      # default mode    
 
 volume						${v}000                    # volume of the triangulation
 input						0                          # start from minimal or from an input. If 0, starts from a minimal sphere
@@ -94,4 +128,4 @@ done;
 
 
 
-#Run the code with betaC = betaL = 0 for standard DT with two trees on the top; Change it to observe the impact of the middle graph
+#Run the code with betaC = betaL = 0 for standard DT;
