@@ -1,32 +1,45 @@
 //#pragma once
-#include "includes.h"
+#include "core/includes.h"
 
 ConfigReader cfr;
 
 void SetProposedFrequencies() {
+
+	bool p1_0 = false, p2_0 = false ,p3_0 = false,pt_v = false,pt_d = false;
+	
+	if(probm1 == 0) p1_0 = true;
+	if(probm2 == 0) p2_0 = true;
+	if(probm3 == 0) p3_0 = true;
+	if(probmtv == 0) pt_v = true;
+	if(probmtd == 0) pt_d = true;
+
 
 	double vm1 = proposed_rate[0] + proposed_rate[1] > 0 ? (double)(accepted_rate[0] + accepted_rate[1]) /  (double)(proposed_rate[0] + proposed_rate[1]) : 0;
 	double vm2 = proposed_rate[2] + proposed_rate[3] > 0 ? (double)(accepted_rate[2] + accepted_rate[3]) /  (double)(proposed_rate[2] + proposed_rate[3]) : 0;
 	double vm3 = proposed_rate[4] + proposed_rate[5] > 0 ? (double)(accepted_rate[4] + accepted_rate[5]) /  (double)(proposed_rate[4] + proposed_rate[5]) : 0;
 	double vm4 = proposed_rate[6] > 0 ? (double)(accepted_rate[6]) / (double)(proposed_rate[6]) : 0;
 	double vm5 = proposed_rate[7] > 0 ? (double)(accepted_rate[7]) / (double)(proposed_rate[7]) : 0;
-	double vm6 = proposed_rate[6] + proposed_rate[7] > 0 ? (double)(accepted_rate[6] + accepted_rate[7]) /  (double)(proposed_rate[6] + proposed_rate[7]) : 0;
 
 
-	probm2 = 1/vm2;
-	probm1 = 1/vm1;
-	probm3 = 1/vm3;
-	probmt = 1/vm6;
+	if(!p1_0) probm1 = 1/vm1;
+	if(!p2_0) probm2 = 1/vm2;
+	if(!p3_0) probm3 = 1/vm3;
+	if(!pt_v) probmtv = 1/vm4;
+	if(!pt_d) probmtv = 1/vm5;
 	
 	if(probm1 > 100) probm1 = 100.0;
 	if(probm2 > 100) probm2 = 100.0;
 	if(probm3 > 100) probm3 = 100.0;
-	if(probmt > 100) probmt = 100.0;
+	if(probmtv > 100) probmtv = 100.0;
+	if(probmtd > 100) probmtd = 100.0;
+
+	cfr.setDouble("m_triangular_pillow", probm1);	
+	cfr.setDouble("m_bistellar_flip", probm2);
+	cfr.setDouble("m_quadrangular_pillow", probm3);
 	
-	cfr.setDouble("prob23", probm2);
-	cfr.setDouble("probtree", probmt);
-	cfr.setDouble("probv02", probm1);
-	cfr.setDouble("probe02", probm3);
+	cfr.setDouble("m_vertextree", probmtv);
+	cfr.setDouble("m_dualtree", probmtd);
+
 
 	cfr.writeBack();	
 }	
@@ -36,17 +49,18 @@ void ReadConfigParameters(std::string fname) {
 
 	cfr.read(fname);
 
-	kappa0 = cfr.getDouble("k0");
-	kappa3 = cfr.getDouble("k3");
+	kappa0 = cfr.getDouble("kappa0");
+	kappa3 = cfr.getDouble("kappa3");
 	
 	betaC = cfr.getDouble("betac");
 	betaL = cfr.getDouble("betal");
 	
 	epsilon = cfr.getDouble("sigma3");
-	probm2 = cfr.getDouble("prob23");
-	probmt = cfr.getDouble("probtree");
-	probm1 = cfr.getDouble("probv02");
-	probm3 = cfr.getDouble("probe02");
+	probm1 = cfr.getDouble("m_triangular_pillow");
+	probm2 = cfr.getDouble("m_bistellar_flip");
+	probm3 = cfr.getDouble("m_quadrangular_pillow");
+	probmtv = cfr.getDouble("m_vertextree");
+	probmtd = cfr.getDouble("m_dualtree");
 
 	
 	measurementsweeps = cfr.getInt("measurementsweeps");
@@ -54,11 +68,6 @@ void ReadConfigParameters(std::string fname) {
 	tuningsweeps = cfr.getInt("tuningsweeps");
 	ksteps = cfr.getInt("ksteps");
 
-	selfadj = cfr.getInt("allowselfadjacency");
-	degeneracy = cfr.getInt("allowdegeneracy");
-	dualspanningtree = cfr.getInt("dualspanningtree");
-	spanningtree = cfr.getInt("spanningtree");
-	middlegraph = cfr.getInt("middlegraph");
 	seed = cfr.getInt("seed");
 	n3bar = cfr.getInt("volume");
 	
@@ -78,11 +87,6 @@ void ReadConfigParameters(std::string fname) {
 	
 	printf("CFG details:\n");
 	
-	printf("self_adj: %d\n",selfadj);
-	printf("degeneracy: %d\n",degeneracy);
-	printf("dualspanningtree: %d\n",dualspanningtree);
-	printf("spanningtree: %d\n",spanningtree);
-	printf("middlegraph: %d\n",middlegraph);
 	printf("volume: %d\n",n3bar);
 	printf("meas_sweeps: %d\n",measurementsweeps);
 	printf("thermal_sweeps: %d\n",thermalizationsweeps);
@@ -109,14 +113,11 @@ int main(int argc, char **argv) {
 		printf("%s\n", fname.c_str());
 	}
 	
-	
-	
 	//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	printf("################# DEFINE PARAMTERES ###########################\n");
 	//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	
 	ReadConfigParameters(fname);
-
 
 	//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	printf("################# INITIALIZE SIMULATION ###########################\n");
@@ -128,11 +129,6 @@ int main(int argc, char **argv) {
     
    // INITIALIZE TRIANGULATION AND SETTINGS
     Triangulation triangulation;
-    triangulation.useDualSpanningTree(dualspanningtree);
-    triangulation.useSpanningTree(spanningtree);
-    triangulation.allowSelfAdjacency(selfadj);
-    triangulation.allowDegeneracy(degeneracy);
-    triangulation.useMiddleGraph(middlegraph);
 
     if( input ) {
         std::ifstream file(infile.c_str());
@@ -154,7 +150,6 @@ int main(int argc, char **argv) {
 
 	//then we perform the tuning when we reached the volume, to gauge the frequencies
 	for(int sweep = 0; sweep < tuningsweeps ; sweep++) {
-	
 		TuneK3(triangulation);	
 		printf("i: %d/%d\t k0:%g\t bC:%g\t bL: %g\t k3 :%g\t N3: %d\t",sweep,thermalizationsweeps, kappa0, betaC, betaL,kappa3,triangulation.numSimplices());
 			
