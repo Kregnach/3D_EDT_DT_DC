@@ -1,9 +1,6 @@
 #ifndef TRIANGULATION_TREEFUNCTIONS_H
 #define TRIANGULATION_TREEFUNCTIONS_H
 
-#include "triangulation.h"
-
-
 void Triangulation::clearSpanningTree() { for( auto s : simplices_ ) for(int i=0;i<4;++i) for(int j=0;j<3;++j) setInSpanningTree(s->getEdge(i,j),false); }
 
 

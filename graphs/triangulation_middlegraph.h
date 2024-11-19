@@ -1,9 +1,6 @@
 #ifndef TRIANGULATION_MIDDLEGRAPH_H
 #define TRIANGULATION_MIDDLEGRAPH_H
 
-#include "triangulation.h"
-
-
 
 void Triangulation::AddNodeMiddleGraph(TreeNode * node) {
 		node->setInMiddleGraph(true); // node should know if its member of the middle graph

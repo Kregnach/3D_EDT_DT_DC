@@ -1,8 +1,6 @@
 #ifndef TRIANGULATION_NODES_H
 #define TRIANGULATION_NODES_H
 
-#include "triangulation.h"
-
 void Triangulation::clear() {
     for( auto s : simplices_ ) if( s ) delete s;
     

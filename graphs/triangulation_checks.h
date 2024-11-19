@@ -1,9 +1,6 @@
 #ifndef TRIANGULATION_CHECKS_H
 #define TRIANGULATION_CHECKS_H
 
-#include "triangulation.h"
-
-
 
 bool Triangulation::isManifold() {
 	for(auto s : simplices_ ) {
