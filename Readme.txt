@@ -6,7 +6,7 @@ The Code implements Euclidean Dynamical Triangulations in 3 dimensions, adding t
 A tree of tetrehedra takes all tetrehedra as nodes and  connects all terahedra via their triangular faces, without any loops or disconnected components. Thus every node is a tetrehedra and every econd node is a triangle in the dual-tree. The tree of vertices is the same, just visiting vertices along edges of the triangulation. There are many edges and triangles that are not visited by the trees, and they form the middlge graph. A graph on the middle graph goes from edge to triangle alternately, and can form loops and components. The smallest unit of such a graph is a pair of triangle and edge forming a length 2 graph.
 
 
-The Pachner moves to change the geometry:
+The moves to change the geometry:
 
 1. triangular-pillow
 2. quadrangular-pillow
