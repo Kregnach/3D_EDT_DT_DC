@@ -55,7 +55,7 @@ g++ main.cpp -I. -std=cc++17 -O3 -o DT
 # betaC : component coupling
 # Volume : number of tetrahedra (typically the fixed value), k means thousand
 # number : occasional extra number for the cfg/config if there are more at the same lococation 
-00
+
 # example: Cfg-2.1--0.2--0.6-8k.txt || or if counted: ||  Cfg-2.1--0.2--0.6-8k-42.txt
 
 # run as: ./DT <CFG>
