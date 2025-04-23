@@ -1,4 +1,4 @@
-Euclidean Triangulations with Spawning Trees and Dynamic Connectivity
+Euclidean Triangulations with Spanning Trees and Dynamic Connectivity
 
 
 The Code implements Euclidean Dynamical Triangulations in 3 dimensions, adding two spawning trees, one on the tetrahedra and one on the vertices. 
