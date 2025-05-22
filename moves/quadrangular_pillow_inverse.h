@@ -28,13 +28,12 @@ template<typename RNG> bool Triangulation::TryGraphMoveEdge20(RNG & rng) {
 	Handle handle1 = GetRandomEdgeCoord2(rng);  //randomly choose an edge
 
 	if( isInSpanningTree(handle1)) return false; // the move is performed only if there is no vertex tree changes
-
-	Handle h1A3DgNA2D = handle1.getAdjacent3D().getNext().getAdjacent2D(); // shortcut as it appears 5 times
-	Handle h1gPgA2D = handle1.getPrevious().getAdjacent2D();
-	
-	//if( isInSpanningTree(h1gPgA2D.getNext()) ||	isInSpanningTree(h1A3DgNA2D.getPrevious()) ) return false;
 		
-	if( handle1.getVertexNode()->getCoord() == 2 || handle1.getAdjacent3D().getVertexNode()->getCoord() == 2) return false;
+	Handle h1_gA3D =  handle1.getAdjacent3D();
+	Handle h1A3DgNA2D = h1_gA3D.getNext().getAdjacent2D(); // shortcut as it appears 5 times
+	Handle h1gPgA2D = handle1.getPrevious().getAdjacent2D();
+		
+	if( handle1.getVertexNode()->getCoord() == 2 || h1_gA3D.getVertexNode()->getCoord() == 2) return false;
 		
 	if(h1gPgA2D.getNext().getEdgeNode()->getId() == h1A3DgNA2D.getPrevious().getEdgeNode()->getId()) return false;
 
@@ -57,13 +56,13 @@ template<typename RNG> bool Triangulation::TryGraphMoveEdge20(RNG & rng) {
 	int int1 = isInDualSpanningTree(handle1);
 	int int2 = isInDualSpanningTree(ad2D);
 	int lR1 = isInSpanningTree(handle1.getPrevious().getAdjacent2D().getNext());
-	int lL1 = isInSpanningTree(handle1.getAdjacent3D().getNext().getAdjacent2D().getPrevious());
+	int lL1 = isInSpanningTree(h1_gA3D.getNext().getAdjacent2D().getPrevious());
 
 	if( (inR1+inR2+inL1+inL2 > 2) ) return false;
 		
 	if( ( ( inR1 && inL2 ) && (int1 || int2) ) || 
 		( ( inL1 && inR2 ) && (int1 || int2) ) || 
-		( inR1 && inR2 ) || ( inL1 && inL2 ) ) return false;
+		( inR1 && inR2 ) || ( inL1 && inL2 ) ) return false; // Tree traverses the structure "wrongly"
 
 	std::vector<bool> treeinfo;	    // undoing is a pain here: need to store the tree info
 		
@@ -72,43 +71,31 @@ template<typename RNG> bool Triangulation::TryGraphMoveEdge20(RNG & rng) {
 	treeinfo.push_back(isInDualSpanningTree(handle1.getNext().getAdjacent2D()) );
 	treeinfo.push_back(isInDualSpanningTree(h1gPgA2D) );
 	treeinfo.push_back(isInDualSpanningTree(h1A3DgNA2D) );
-	treeinfo.push_back(isInDualSpanningTree(handle1.getAdjacent3D().getPrevious().getAdjacent2D()) );
+	treeinfo.push_back(isInDualSpanningTree(h1_gA3D.getPrevious().getAdjacent2D()) );
 
 	treeinfo.push_back(isInSpanningTree(handle1.getNext()));
 	treeinfo.push_back(isInSpanningTree(handle1.getPrevious()) );
 	treeinfo.push_back(isInSpanningTree(ad2D.getNext()) );
 	treeinfo.push_back(isInSpanningTree(ad2D.getPrevious()) );
 	treeinfo.push_back(isInSpanningTree(handle1.getPrevious().getAdjacent2D().getNext()) );
-	treeinfo.push_back(isInSpanningTree(handle1.getAdjacent3D().getNext().getAdjacent2D().getPrevious()) );
+	treeinfo.push_back(isInSpanningTree(h1_gA3D.getNext().getAdjacent2D().getPrevious()) );
 
 	int rotator_number = nbrL1.getEdgeNode()->getCoord()-1;
 
-	int wb = 0;
-		
-		
-	if( ( (inR1 && inL1) && (int1 || int2) ) || ( (inR2 && inL2) && (int1 || int2) ) ) { //if the tree traverses the pillow
-		//wb--; //then the other two triangles are in the middle sector; after collapse decrease the graph cord by one
-		
-		if( !random_bernoulli(rng,0.5) ) return false ;
-		
-	}
-	else{								//if doesn't traverse
-			//if( (int1 || int2) ) wb--; // it has only one external triangle which are in the tree, thus has a pair that will collapse into one, decrease the graph coord
-			//else if( !(int1 || int2) &&  ((inR1 && inL1) || (inR2 && inL2)) ) wb--; //if internal triangles are not in the dual tree, then it has two external one, if the 
-		if( !random_bernoulli(rng,1.0/12.0) ) return false;
-	}
+	int wb = 0;				
 		
 	double factor = 1.0;
+	if(lR1 || lL1) factor = 2.0; //if left or right edge is in the spanning tree
 	
-	if(isInSpanningTree(nbrR1) || isInSpanningTree(nbrL1)) factor = 2.0;
+	if( ( (inR1 && inL1) && (int1 || int2) ) || ( (inR2 && inL2) && (int1 || int2) )  ) factor *= 2.0; //in tree traverses the structure
+	else factor *= 12.0; // otherwise
 	
-	double prob = (double)( ( GetEdgeCoord2Size() ) / (double)( factor*3*(numSimplices() - 2)*(cr + cl - 3)) );
 
+	double prob = (double)( ( GetEdgeCoord2Size() ) / (double)( factor*6*(numSimplices() - 2)*(cr + cl - 3)) );
 	
 	unsetGraphFaceLinksBeforeMoveEdge20(handle1);
 	Handle handle2 = unexpandRectangle(handle1, 1);
 	
-
 	double SB = getActionNow();
 	double moveprob = uniform_real(rng);
 
@@ -134,12 +121,9 @@ template<typename RNG> bool Triangulation::TryGraphMoveEdge20(RNG & rng) {
 		setInSpanningTree( handle_after.getAdjacent2D().getPrevious(),treeinfo[9] );
 		setInSpanningTree( handle_after.getPrevious().getAdjacent2D().getNext(),treeinfo[10] );
 		setInSpanningTree( handle_after.getAdjacent3D().getNext().getAdjacent2D().getPrevious(),treeinfo[11] );
-
-
 		
 		setGraphFaceLinksAfterMoveEdge02(handle_after);
 		
-
 		return false;
 	}
 
@@ -149,7 +133,6 @@ template<typename RNG> bool Triangulation::TryGraphMoveEdge20(RNG & rng) {
 
 Handle Triangulation::unexpandRectangle(Handle handle1, int setTrees) {
 	
-
 	DecrementCoord(handle1.getEdgeNode() , 1);
 	DecrementCoord(handle1.getEdgeNode() , 1);
 
@@ -199,8 +182,8 @@ Handle Triangulation::unexpandRectangle(Handle handle1, int setTrees) {
 
 	Handle l1 = nbrR1.getNext();//handle1.getNext();
 	Handle l2 = nbrR1.getPrevious();//handle1.getPrevious();
-	Handle l3 = nbrR2.getNext();//handle1.getAdjacent2D().getNext();
-	Handle l4 = nbrR2.getPrevious();//handle1.getAdjacent2D().getPrevious();
+	Handle l3 = nbrR2.getNext();//handle1.getAdjacent3D().getNext();
+	Handle l4 = nbrR2.getPrevious();//handle1.getAdjacent3D().getPrevious();
 
 	Simplex * sh1 = handle1.getSimplex();
 	Simplex * sh2 = handle1.getAdjacent3D().getSimplex();
@@ -287,7 +270,7 @@ Handle Triangulation::unexpandRectangle(Handle handle1, int setTrees) {
 	deleteSimplex(sh2); //delete simplex 2 
 
 	if( setTrees ) {
-		if( (in11 && in21) && ( int1 || int2 ) ) { setInDualSpanningTree(nbrR1); } //CHECK HERE???
+		if( (in11 && in21) && ( int1 || int2 ) ) { setInDualSpanningTree(nbrR1); } 
 		else if( (in12 && in22) && ( int1 || int2 ) ) { setInDualSpanningTree(nbrR2); }
 		else { /* do nothing */ } //( (in11 && in22) && (in21 && in12) )
 		

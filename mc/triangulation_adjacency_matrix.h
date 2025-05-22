@@ -123,8 +123,4 @@ void Triangulation::printAdjacency_color(char * outfilename) {
 
 
 
-
-
-
-
 #endif

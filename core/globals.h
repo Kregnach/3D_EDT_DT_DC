@@ -4,6 +4,9 @@
 int proposed_rate[8] = {0,0,0,0,0,0,0,0};
 int accepted_rate[8] = {0,0,0,0,0,0,0,0};
 
+int moves_meas[7] = {0,0,0,0,0,0,0};
+int moves_meas_sum[7] = {0,0,0,0,0,0,0};
+
 
 double kappa3 = 0;
 double kappa0 = 0;
@@ -20,6 +23,7 @@ double probmtd = 0;
 double epsilon = 0;
 
 int config_number = 0;
+int verbose = 0;
 
 
 int measurementsweeps = 0;

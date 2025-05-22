@@ -1,4 +1,4 @@
-Euclidean Triangulations with Spanning Trees and Dynamic Connectivity
+Euclidean Triangulations with Spawning Trees and Dynamic Connectivity
 
 
 The Code implements Euclidean Dynamical Triangulations in 3 dimensions, adding two spawning trees, one on the tetrahedra and one on the vertices. 
@@ -6,7 +6,7 @@ The Code implements Euclidean Dynamical Triangulations in 3 dimensions, adding t
 A tree of tetrehedra takes all tetrehedra as nodes and  connects all terahedra via their triangular faces, without any loops or disconnected components. Thus every node is a tetrehedra and every econd node is a triangle in the dual-tree. The tree of vertices is the same, just visiting vertices along edges of the triangulation. There are many edges and triangles that are not visited by the trees, and they form the middlge graph. A graph on the middle graph goes from edge to triangle alternately, and can form loops and components. The smallest unit of such a graph is a pair of triangle and edge forming a length 2 graph.
 
 
-The moves to change the geometry:
+The Pachner moves to change the geometry:
 
 1. triangular-pillow
 2. quadrangular-pillow
@@ -55,7 +55,7 @@ g++ main.cpp -I. -std=cc++17 -O3 -o DT
 # betaC : component coupling
 # Volume : number of tetrahedra (typically the fixed value), k means thousand
 # number : occasional extra number for the cfg/config if there are more at the same lococation 
-
+00
 # example: Cfg-2.1--0.2--0.6-8k.txt || or if counted: ||  Cfg-2.1--0.2--0.6-8k-42.txt
 
 # run as: ./DT <CFG>
@@ -81,16 +81,16 @@ rand=$RANDOM
 
 cat > Cfg-$k-$l-$c-${v}k-${num}.txt << EOF             # FILENAME
 seed 						${rand}                    # seed of the random number
-kappa0							$k                         # gravitational coupling
-kappa3							-1                         # cosmological coupling
+kappa0							$k                     # gravitational coupling
+kappa3							-1                     # cosmological coupling
 betac						$c                         # component coupling
 betal						$l                         # loop coupling
-sigma3						0.05                       # strength of the volume fixing 
-m_bistellar_flip						0.5                        # probability of the bistellar flip move
-m_vertextree					0.05                       # probability of the tree moves
-m_dualtree					0.05                       # probability of the tree moves
-m_quadrangular_pillow						0                          # probability of the quadrangular pillow move
-m_triangular_pillow						1                          # probability of the triangular pillow move
+sigma3						0.04                       # strength of the volume fixing 
+m_bistellar_flip						0.5            # probability of the bistellar flip move
+m_vertextree					0.05                   # probability of the tree moves
+m_dualtree						0.05                   # probability of the tree moves
+m_quadrangular_pillow			0                      # probability of the quadrangular pillow move
+m_triangular_pillow						1              # probability of the triangular pillow move
 
 measurementsweeps				400000                 # number of measurement sweeps to be performed
 thermalizationsweeps				20000              # number of thermalization sweeps to be performed
@@ -105,9 +105,13 @@ fileID						$k-$l-$c-${v}k-${num}      # fileID, string to be used for every fil
 number						${num}                     # number in case if many runs for the same couplings
 printfreq					1000                       # frequency in sweeps for updating the .DT file
 
-measuresimplexdata				1                      # measures standard obserables
+measuresimplexdata				1                      # measures standard observables
 measureadjacency				0                      # measures the adjacency matrix (two type, change in main.cpp and recompile, check the code)
 measurehistograms				0                      # measure histograms of some observables
+
+adjacency_matrix_version			0                  # different weights 
+
+verbose						1	                       # prints the moves and some info during simulations
 
 EOF
 

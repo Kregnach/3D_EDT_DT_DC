@@ -27,10 +27,9 @@ template<typename RNG> bool Triangulation::TryGraphMoveEdge02(RNG & rng) {
 	double SA = getActionNow();
 
 	Handle handle1 = getRandomEdge(rng);  //randomly choose an edge
-	//if(isInSpanningTree(handle1)) return false; // Don't accpet it (yet)
-	
+		
 	int h_coord = handle1.getEdgeNode()->getCoord();
-//	int gh_coord = handle1.getEdgeNode()->getGraphCoord();
+
 	int rotator_number = (int)( uniform_real(rng) * (h_coord-1) ) + 1; //random 2nd handle around the link, avoid 0 and max rotation
 
 	Handle handle2 = handle1.getRotationAroundEdge(rotator_number).getAdjacent3D(); //avoid 0 or max rotation
@@ -38,6 +37,8 @@ template<typename RNG> bool Triangulation::TryGraphMoveEdge02(RNG & rng) {
 	int h1in = isInDualSpanningTree( handle1 );
 	int h2in = isInDualSpanningTree( handle2 );
 	
+		
+
 	if( h1in && h2in ) return false;  // RETURN if both are in the dual tree, the move would break the dual tree
 	
 	if( handle1.getPrevious().getVertexNode()->getId() == handle2.getPrevious().getVertexNode()->getId() ) return false; // avoid ruining the manifold constraints
@@ -50,12 +51,10 @@ template<typename RNG> bool Triangulation::TryGraphMoveEdge02(RNG & rng) {
 		treeinfo.push_back( isInSpanningTree(handle2.getNext()) );
 		treeinfo.push_back( isInSpanningTree(handle2.getPrevious()) );
 		treeinfo.push_back( isInSpanningTree(handle1));
-
+	
 	double rng1 = uniform_real(rng);
 	double rng2 = uniform_real(rng);
 	double moveprob = uniform_real(rng);
-	
-
 	
 	int wb = 1;
 
@@ -65,21 +64,22 @@ template<typename RNG> bool Triangulation::TryGraphMoveEdge02(RNG & rng) {
 	int c4 = handle2.getNext().getEdgeNode()->getCoord();
 	int c5 = handle2.getPrevious().getEdgeNode()->getCoord();
 	
-	if( ( (h_coord-rotator_number) == 1) || (rotator_number == 1) ) wb = 2 ; //if we rotate 1 or -1, we have +1
+	if( ( (h_coord-rotator_number) == 1) || (rotator_number == 1) ) wb = 2 ; //if we rotate 1 or -1, we have one less tetrahedra, thus +1
 	
-	if (c2 == 2) wb-- ; //if any is of coord 2, they will increase
+	if (c2 == 2) wb-- ; //if any is of coord 2, they will increase, thus there will be less c2 edges
 	if (c3 == 2) wb-- ;
 	if (c4 == 2) wb-- ;
-	if (c5 == 2) wb-- ; //if any is of coord 2, they will increase
+	if (c5 == 2) wb-- ; //if any is of coord 2, they will increase, thus there will be less c2 edges
 
 	double factor = 1.0;
 	
 	if(isInSpanningTree(handle1)) factor = 2.0;
+
+	if( (h1in || h2in) ) factor *= 2.0; //in the paper
+	else factor *= 12.0;                   // in the paper
 	
-//	double prob = factor*(double)(((numSimplices())*6*3) / ((GetEdgeCoord2Size() + wb)-3*(GetCoord2Size()-cwb)  ))
-	
-	double prob = factor*(double)((3*numSimplices()*(h_coord-1)) / ((GetEdgeCoord2Size() + wb)  ));
-	
+// in the paper:
+	double prob = factor*(double)((6*numSimplices()*(h_coord-1)) / ((GetEdgeCoord2Size() + wb)  ));
 	
 	unsetGraphFaceLinksBeforeMoveEdge02(handle1,handle2);
 	
@@ -156,75 +156,78 @@ Handle Triangulation::expandRectangle(Handle handle1, Handle handle2,double rng1
 	TreeNode * newface4 = newNode(2); // 4 new faces are created
 
 	// ###################### ADJACENT Simplices #########################
-
-	setAdjacent( s1->getEdge(0,0) , handle1     ); //s1 1/4
-	setAdjacent( s2->getEdge(0,0) , handle1_nbr ); //s2 1/4
+	
+	auto s1_ge00 = s1->getEdge(0,0);
+	auto s2_ge00 = s2->getEdge(0,0);
+	
+	setAdjacent( s1_ge00 , handle1     ); //s1 1/4
+	setAdjacent( s2_ge00 , handle1_nbr ); //s2 1/4
 
 	setAdjacent( 
-		s1->getEdge(0,0).getNext().getAdjacent2D() ,
-		s2->getEdge(0,0).getPrevious().getAdjacent2D() );  //s1 3/4 s2 3/4
+		s1_ge00.getNext().getAdjacent2D() ,
+		s2_ge00.getPrevious().getAdjacent2D() );  //s1 3/4 s2 3/4
 
 	setAdjacent( 
-		s1->getEdge(0,0).getPrevious().getAdjacent2D() , 
-		s2->getEdge(0,0).getNext().getAdjacent2D() );  //s1 4/4 s2 4/4
+		s1_ge00.getPrevious().getAdjacent2D() , 
+		s2_ge00.getNext().getAdjacent2D() );  //s1 4/4 s2 4/4
 		
-	setAdjacent( s1->getEdge(0,0).getAdjacent2D() , handle2     ); //s1 2/4
-	setAdjacent( s2->getEdge(0,0).getAdjacent2D() , handle2_nbr );  //s2 2/4
+	setAdjacent( s1_ge00.getAdjacent2D() , handle2     ); //s1 2/4
+	setAdjacent( s2_ge00.getAdjacent2D() , handle2_nbr );  //s2 2/4
 
 	// ###################### Assign vertices #########################
 
-	setVertexNode(s1->getEdge(0,0) , s1->getEdge(0,0).getAdjacent3D().getNext().getVertexNode()); //s1 1/4
-	setVertexNode(s2->getEdge(0,0) , s2->getEdge(0,0).getAdjacent3D().getNext().getVertexNode()); //s2 1/4
+	setVertexNode(s1_ge00 , s1_ge00.getAdjacent3D().getNext().getVertexNode()); //s1 1/4
+	setVertexNode(s2_ge00 , s2_ge00.getAdjacent3D().getNext().getVertexNode()); //s2 1/4
 
-	setVertexNode(s1->getEdge(0,0).getNext() , 
-		s1->getEdge(0,0).getAdjacent3D().getVertexNode()); //s1 2/4
-	setVertexNode(s2->getEdge(0,0).getNext() , 
-		s2->getEdge(0,0).getAdjacent3D().getVertexNode()); //s2 2/4
-	setVertexNode(s1->getEdge(0,0).getPrevious(), 
-		s1->getEdge(0,0).getAdjacent3D().getPrevious().getVertexNode()); //s1 3/4
-	setVertexNode(s2->getEdge(0,0).getPrevious(), 
-		s2->getEdge(0,0).getAdjacent3D().getPrevious().getVertexNode()); //s2 3/4
-	setVertexNode(s1->getEdge(0,0).getAdjacent2D().getPrevious() , 
-		s1->getEdge(0,0).getAdjacent2D().getAdjacent3D().getPrevious().getVertexNode()); //s1 4/4
-	setVertexNode(s2->getEdge(0,0).getAdjacent2D().getPrevious() , 
-		s2->getEdge(0,0).getAdjacent2D().getAdjacent3D().getPrevious().getVertexNode()); //s2 4/4
+	setVertexNode(s1_ge00.getNext() , 
+		s1_ge00.getAdjacent3D().getVertexNode()); //s1 2/4
+	setVertexNode(s2_ge00.getNext() , 
+		s2_ge00.getAdjacent3D().getVertexNode()); //s2 2/4
+	setVertexNode(s1_ge00.getPrevious(), 
+		s1_ge00.getAdjacent3D().getPrevious().getVertexNode()); //s1 3/4
+	setVertexNode(s2_ge00.getPrevious(), 
+		s2_ge00.getAdjacent3D().getPrevious().getVertexNode()); //s2 3/4
+	setVertexNode(s1_ge00.getAdjacent2D().getPrevious() , 
+		s1_ge00.getAdjacent2D().getAdjacent3D().getPrevious().getVertexNode()); //s1 4/4
+	setVertexNode(s2_ge00.getAdjacent2D().getPrevious() , 
+		s2_ge00.getAdjacent2D().getAdjacent3D().getPrevious().getVertexNode()); //s2 4/4
 
 	// ###################### Assign edges #########################
 
-	setEdgeNode(s1->getEdge(0,0) , s1->getEdge(0,0).getAdjacent3D().getEdgeNode()); //); //s2 1/6
-	setEdgeNode(s2->getEdge(0,0) , newedge); //s2 1/6
+	setEdgeNode(s1_ge00 , s1_ge00.getAdjacent3D().getEdgeNode()); //); //s2 1/6
+	setEdgeNode(s2_ge00 , newedge); //s2 1/6
 	
 	//printf("###### st Setting up ###### \n");
 
-	setEdgeNode(s1->getEdge(0,0).getNext() , 
-		s1->getEdge(0,0).getAdjacent3D().getPrevious().getEdgeNode() ); // ); // s1 2/6
+	setEdgeNode(s1_ge00.getNext() , 
+		s1_ge00.getAdjacent3D().getPrevious().getEdgeNode() ); // ); // s1 2/6
 
-	setEdgeNode(s1->getEdge(0,0).getPrevious() , 
-		s1->getEdge(0,0).getAdjacent3D().getNext().getEdgeNode() ); // s1 3/6
+	setEdgeNode(s1_ge00.getPrevious() , 
+		s1_ge00.getAdjacent3D().getNext().getEdgeNode() ); // s1 3/6
 	
-	setEdgeNode(s1->getEdge(0,0).getAdjacent2D().getPrevious() , 
-		s1->getEdge(0,0).getAdjacent2D().getAdjacent3D().getNext().getEdgeNode() ); //, ); // s1 4/6
-	setEdgeNode(s1->getEdge(0,0).getAdjacent2D().getNext() , 
-		s1->getEdge(0,0).getAdjacent2D().getAdjacent3D().getPrevious().getEdgeNode()); //s1 5/6
+	setEdgeNode(s1_ge00.getAdjacent2D().getPrevious() , 
+		s1_ge00.getAdjacent2D().getAdjacent3D().getNext().getEdgeNode() ); //, ); // s1 4/6
+	setEdgeNode(s1_ge00.getAdjacent2D().getNext() , 
+		s1_ge00.getAdjacent2D().getAdjacent3D().getPrevious().getEdgeNode()); //s1 5/6
 
-	setEdgeNode(s2->getEdge(0,0).getNext() , s2->getEdge(0,0).getAdjacent3D().getPrevious().getEdgeNode()); // s2 2/6
-	setEdgeNode(s2->getEdge(0,0).getPrevious() , s2->getEdge(0,0).getAdjacent3D().getNext().getEdgeNode()); //s2 3/6
-	setEdgeNode(s2->getEdge(0,0).getAdjacent2D().getPrevious() , s2->getEdge(0,0).getAdjacent2D().getAdjacent3D().getNext().getEdgeNode()); //s2 4/6
-	setEdgeNode(s2->getEdge(0,0).getAdjacent2D().getNext(), s2->getEdge(0,0).getAdjacent2D().getAdjacent3D().getPrevious().getEdgeNode()); //s2 5/6
+	setEdgeNode(s2_ge00.getNext() , s2_ge00.getAdjacent3D().getPrevious().getEdgeNode()); // s2 2/6
+	setEdgeNode(s2_ge00.getPrevious() , s2_ge00.getAdjacent3D().getNext().getEdgeNode()); //s2 3/6
+	setEdgeNode(s2_ge00.getAdjacent2D().getPrevious() , s2_ge00.getAdjacent2D().getAdjacent3D().getNext().getEdgeNode()); //s2 4/6
+	setEdgeNode(s2_ge00.getAdjacent2D().getNext(), s2_ge00.getAdjacent2D().getAdjacent3D().getPrevious().getEdgeNode()); //s2 5/6
 	
-	setEdgeNode(s1->getEdge(0,0).getNext().getAdjacent2D().getPrevious() , newlink); //s1 6/6
-	setEdgeNode(s2->getEdge(0,0).getPrevious().getAdjacent2D().getNext() , newlink); //s2 6/6
+	setEdgeNode(s1_ge00.getNext().getAdjacent2D().getPrevious() , newlink); //s1 6/6
+	setEdgeNode(s2_ge00.getPrevious().getAdjacent2D().getNext() , newlink); //s2 6/6
 
 	// ###################### Assign Inner faces #########################	
-	setFaceNode(s1->getEdge(0,0).getNext().getAdjacent2D() , newface3); //s1 + s2  1/4
-	setFaceNode(s1->getEdge(0,0).getPrevious().getAdjacent2D() , newface4); //s1 + s2 2/4
+	setFaceNode(s1_ge00.getNext().getAdjacent2D() , newface3); //s1 + s2  1/4
+	setFaceNode(s1_ge00.getPrevious().getAdjacent2D() , newface4); //s1 + s2 2/4
 	// ###################### Assign faces #########################
 
-	setFaceNode(s1->getEdge(0,0) , handle1.getFaceNode()); // s1 3/4
-	setFaceNode(s1->getEdge(0,0).getAdjacent2D() , handle2.getFaceNode()); // s1 4/4
+	setFaceNode(s1_ge00 , handle1.getFaceNode()); // s1 3/4
+	setFaceNode(s1_ge00.getAdjacent2D() , handle2.getFaceNode()); // s1 4/4
 	
-	setFaceNode(s2->getEdge(0,0) , newface1) ; // s1 3/4
-	setFaceNode(s2->getEdge(0,0).getAdjacent2D() , newface2) ; // s1 3/4
+	setFaceNode(s2_ge00 , newface1) ; // s1 3/4
+	setFaceNode(s2_ge00.getAdjacent2D() , newface2) ; // s1 3/4
 	
 	if(rng1 == -1 ) goto skip_trees_edge02;
 	

@@ -27,11 +27,11 @@ void SetProposedFrequencies() {
 	if(!pt_v) probmtv = 1/vm4;
 	if(!pt_d) probmtv = 1/vm5;
 	
-	if(probm1 > 100) probm1 = 100.0;
-	if(probm2 > 100) probm2 = 100.0;
-	if(probm3 > 100) probm3 = 100.0;
-	if(probmtv > 100) probmtv = 100.0;
-	if(probmtd > 100) probmtd = 100.0;
+	if(probm1 > 100) probm1 = 50.0;
+	if(probm2 > 100) probm2 = 50.0;
+	if(probm3 > 100) probm3 = 50.0;
+	if(probmtv > 100) probmtv = 50.0;
+	if(probmtd > 100) probmtd = 50.0;
 
 	cfr.setDouble("m_triangular_pillow", probm1);	
 	cfr.setDouble("m_bistellar_flip", probm2);
@@ -83,7 +83,7 @@ void ReadConfigParameters(std::string fname) {
 
 	infile = cfr.getString("infile");
 	outfile = cfr.getString("outfile");
-	
+	verbose = cfr.getInt("verbose");
 	
 	printf("CFG details:\n");
 	
@@ -114,13 +114,13 @@ int main(int argc, char **argv) {
 	}
 	
 	//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-	printf("################# DEFINE PARAMTERES ###########################\n");
+	if(verbose) printf("################# DEFINE PARAMTERES ###########################\n");
 	//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	
 	ReadConfigParameters(fname);
 
 	//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-	printf("################# INITIALIZE SIMULATION ###########################\n");
+	if(verbose) printf("################# INITIALIZE SIMULATION ###########################\n");
 	//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
     if(seed == -1) seed = rand();
@@ -132,15 +132,17 @@ int main(int argc, char **argv) {
 
     if( input ) {
         std::ifstream file(infile.c_str());
-        if( !file || !triangulation.loadFromStream(file) ) { std::cout << "Error reading " << infile << "\n"; return 1; }
+        if( !file || !triangulation.loadFromStream(file) ) { 
+        if(verbose) 
+        	std::cout << "Error reading " << infile << "\n"; return 1; }
         
-        std::cout << "Triangulation loaded from " << infile << "\n"; 
+        if(verbose) std::cout << "Triangulation loaded from " << infile << "\n"; 
     }
     else { triangulation.initializeMinimal(); std::cout << "Minimal triangulation loaded.\n"; }
     
 
 	//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-	printf("################# Initial volume boost ###########################\n");
+	if(verbose) printf("################# Initial volume boost ###########################\n");
 	//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	
 	if(kappa3 == -1) kappa3 = 0.25*(kappa0 + std::sqrt(4.0 + kappa0*kappa0)) + 2.4;  // if k3 is set to tuning.....
@@ -151,21 +153,22 @@ int main(int argc, char **argv) {
 	//then we perform the tuning when we reached the volume, to gauge the frequencies
 	for(int sweep = 0; sweep < tuningsweeps ; sweep++) {
 		TuneK3(triangulation);	
-		printf("i: %d/%d\t k0:%g\t bC:%g\t bL: %g\t k3 :%g\t N3: %d\t",sweep,thermalizationsweeps, kappa0, betaC, betaL,kappa3,triangulation.numSimplices());
+		if(verbose) printf("i: %d/%d\t k0:%g\t bC:%g\t bL: %g\t k3 :%g\t N3: %d\t",sweep,thermalizationsweeps, kappa0, betaC, betaL,kappa3,triangulation.numSimplices());
 			
 		mov = MCMoves(triangulation, ksteps*1000, rng);
 
-		printf("moves: \t");
-		for(int i=0;i<9;i++) printf("%ld\t",mov[i]); printf("\n"); 
-		for(int i=0;i<8;i++) moves[i] += mov[i];
-		
+		if(verbose) {
+			printf("moves: \t");
+			for(int i=0;i<9;i++) printf("%ld\t",mov[i]); printf("\n"); 
+			for(int i=0;i<8;i++) moves[i] += mov[i];
+		}
 
 		if(sweep == tuningsweeps-1) SetProposedFrequencies();
 	}
 
 
 	//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-	printf("################# Run SIMULATION ###########################\n");
+	if(verbose) printf("################# Run SIMULATION ###########################\n");
 	//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	
 	//then we thermalize and measure
@@ -173,16 +176,17 @@ int main(int argc, char **argv) {
 	
 		if(sweep < thermalizationsweeps) { 
 			TuneK3(triangulation);	
-			printf("i: %d/%d\t k0:%g\t bC:%g\t bL: %g\t k3: %g\t N3: %d\t",sweep,thermalizationsweeps, kappa0, betaC, betaL,kappa3,triangulation.numSimplices());
+			if(verbose) printf("i: %d/%d\t k0:%g\t bC:%g\t bL: %g\t k3: %g\t N3: %d\t",sweep,thermalizationsweeps, kappa0, betaC, betaL,kappa3,triangulation.numSimplices());
 				 
 		}	
 
 		mov = MCMoves(triangulation, ksteps*1000, rng);
 
-		printf("\nmoves: \t");
-		for(int i=0;i<9;i++) printf("%ld\t",mov[i]); printf("\n"); 
-		for(int i=0;i<8;i++) moves[i] += mov[i];
-		
+		if(verbose) {
+			printf("\nmoves: \t");
+			for(int i=0;i<9;i++) printf("%ld\t",mov[i]); printf("\n"); 
+			for(int i=0;i<8;i++) moves[i] += mov[i];
+		}
 		
 		if( (sweep % printfeq) == 0) {
 			std::ofstream file2(outfile.c_str());
@@ -199,7 +203,7 @@ int main(int argc, char **argv) {
 	triangulation.saveToStream(file2);
 	
 	//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-	printf("################# Finished SIMULATION ###########################\n");
+	if(verbose) printf("################# Finished SIMULATION ###########################\n");
 	//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	
 	
